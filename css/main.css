@@ -1,0 +1,109 @@
+/* MINECRAFT FONT BECAUSE I LIKE */
+@import url('http://fonts.cdnfonts.com/css/minecraft-4');
+
+* {
+    padding: 0px;
+    margin: 0px;
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+    font-family: 'Minecraft', sans-serif, Arial, Helvetica;
+    font-size: 16px;
+    background-color: #19323C;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+header {
+    color: #eef0f2;
+    padding: 20px;
+}
+
+header h1 {
+    font-size: 38px;
+}
+
+.game-wrapper {
+    /* flex: 1; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.game {
+    width: 800px;
+    height: 600px;
+    background: url(../img/background-galaxy.png);
+    animation: scroll-background 5s linear infinite;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.game .meteorite {
+    position: absolute;
+    width: 40px;
+}
+
+/* SCORE */
+.score {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: 20px;
+    color: #eef0f2;
+    gap: 10px;
+}
+
+
+/* BUTTONS GAME */
+.btn-start {
+    background: #E6E8E6;
+    border: 1px solid #E6E8E6;
+    bottom: 25%;
+    box-shadow: 0 2px 10px rgba(238, 240, 242, 0.2);
+    cursor: pointer;
+    font-family: 'Minecraft', sans-serif, Arial, Helvetica;
+    font-size: 25px;
+    font-weight: bold;
+    left: calc(50% - 125px);
+    padding: 5px;
+    position: absolute;
+    width: 250px;
+}
+
+.btn-start:hover {
+    background: transparent;
+    color:#E6E8E6;
+}
+
+.hidden {
+    visibility: hidden;
+}
+
+/* ANIMATIONS */
+@keyframes scroll-background {
+    from {
+      background-position-y: 0px;
+    }
+    to {
+      background-position-y: 400px;
+    }
+}
