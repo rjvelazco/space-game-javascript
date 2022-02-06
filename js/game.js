@@ -269,33 +269,50 @@ function updatePlayerPosition(e) {
     const maxValueY = height - pHeight ;
     const maxValueX = width - (pWidth/2);
     const minValueX = (pWidth/2);
-    GAME_STATE.player.y = 
-        preventPlayerOverflow({
+    GAME_STATE.player.x = preventPlayerOverflow({
+        value: e.pageX,
+        min: left + (pWidth/2),
+        max: right - (pWidth/2),
+        maxValue: maxValueX,
+        minValue: minValueX,
+    }) || e.offsetX;
+    GAME_STATE.player.y =  preventPlayerOverflow({
             value: e.pageY,
             min: top,
             max: bottom - pHeight,
             maxValue: maxValueY,
             minValue: 0
         }) || e.offsetY;
-    GAME_STATE.player.x =
-        preventPlayerOverflow({
-            value: e.pageX,
-            min: left + (pWidth/2),
-            max: right - (pWidth/2),
-            maxValue: maxValueX,
-            minValue: minValueX,
-        }) || e.offsetX;
     setPosition({ $element: $player, ...GAME_STATE.player });
 }
 
 function updatePlayerPositionFromMovile(e) {
     const eventData = e.changedTouches[0];
-    const { offsetX, offsetY } = getOffset(...eventData);
-
-    GAME_STATE.player.x = offsetX;
-    GAME_STATE.player.y = offsetY;
-
+    const { offsetX, offsetY } = getOffset(eventData);
+    
     const $player = document.querySelector('.player');
+
+    const { height: pHeight, width: pWidth } = $player.getBoundingClientRect();
+    const { left, right, bottom, top, height, width } = $container.getBoundingClientRect();
+    const maxValueY = height - pHeight ;
+    const maxValueX = width - (pWidth/2);
+    const minValueX = (pWidth/2);
+
+    GAME_STATE.player.x = preventPlayerOverflow({
+        value: eventData.pageX,
+        min: left + (pWidth/2),
+        max: right - (pWidth/2),
+        maxValue: maxValueX,
+        minValue: minValueX,
+    }) || offsetX;
+    GAME_STATE.player.y = preventPlayerOverflow({
+        value: eventData.pageY,
+        min: top,
+        max: bottom - pHeight,
+        maxValue: maxValueY,
+        minValue: 1
+    }) || offsetY;
+
     setPosition({ $element: $player, ...GAME_STATE.player });
 }
 
