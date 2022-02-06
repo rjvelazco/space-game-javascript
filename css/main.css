@@ -90,6 +90,20 @@ header h1 {
     pointer-events: none;
 }
 
+.game .live-box {
+    display: flex;
+    justify-content: flex-start;
+    padding: 10px;
+    position: absolute;
+    top: 0px;
+    gap: 5px;
+    pointer-events: none;
+}
+
+.game .live-box img {
+    width: 40px;
+}
+
 
 /* RESULTS */
 .congratulations {
@@ -133,6 +147,26 @@ header h1 {
 
 .cursor-none {
     cursor: none;
+}
+
+.information {
+    width: 320px;
+    text-align: center;
+    bottom: 50%;
+    color: #E6E8E6;
+    left: calc(50% - 160px);
+    margin:0px;
+    position: absolute;
+    line-height: 2.25rem;
+    pointer-events: none;
+}
+
+.information h2 {
+    font-size: 24px;
+}
+
+.information h2 .goal {
+    color: #ffaa00;
 }
 
 /* BUTTONS GAME */

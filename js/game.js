@@ -6,12 +6,15 @@ const $congratulation = document.querySelector('.congratulations');
 const $meteoriteStartPoints = document.querySelectorAll('.point');
 const $btnStart = document.querySelector('#btn-start');
 const $scorePoint = document.querySelector('#score-point');
+const $informationBox = document.querySelector('#information');
+const $liveBox = document.querySelector('.live-box');
+let $playerLifes = document.querySelectorAll('.live');
 
 // GAME SETTINGS
 const { width: GAME_WIDTH, height: GAME_HEIGHT } = $container.getBoundingClientRect();
 const METEORITE_MAX_SPEED = 200;
 
-let METEORITE_TIME_APPEARS = 400;
+let METEORITE_TIME_APPEARS = 500;
 let LAST_METEORITE_POSITION;
 let setIntervalMeteorite;
 let setIntervalScore;
@@ -22,6 +25,8 @@ const GAME_STATE = {
     player: {
         x: 0,
         y: 0,
+        life: 3,
+        invincibility: false
     },
     meteorites: [],
     currentScore: 0,
@@ -66,12 +71,12 @@ function ajustDificulty() {
         
     switch(GAME_STATE.currentScore) {
         case 500: 
-            METEORITE_TIME_APPEARS = 250;
+            METEORITE_TIME_APPEARS = 400;
             GAME_STATE.currentScore += 2;
             setMeteoriteAppearsTimer();
         break;
         case 750:
-            METEORITE_TIME_APPEARS = 150;
+            METEORITE_TIME_APPEARS = 250;
             GAME_STATE.currentScore += 5;
             setMeteoriteAppearsTimer();
         break;
@@ -111,6 +116,67 @@ function addMeteorite() {
 function increaseScore() {
     $scorePoint.innerHTML = GAME_STATE.currentScore;
     ajustDificulty();
+}
+
+function addEvents() {
+    $container.addEventListener('mousemove', updatePlayerPosition);
+    $container.addEventListener('touchmove', updatePlayerPositionFromMovile);
+}
+
+function removeEvents() {
+    $container.removeEventListener('mousemove', updatePlayerPosition);
+    $container.removeEventListener('touchmove', updatePlayerPositionFromMovile);
+}
+
+function cleanScreenGameSpace() {
+    $btnStart.classList.add('d-none');
+    $congratulation.classList.add('d-none');
+    $container.classList.add('cursor-none');
+    $gameOver.classList.add('d-none');
+    $informationBox.classList.add('d-none');
+    $scoreBoard.classList.remove('hidden');
+}
+
+function resetGameState() {
+    GAME_STATE.lastTime = Date.now();
+    GAME_STATE.player.life = 3;
+    GAME_STATE.isOver = false;
+    GAME_STATE.meteorites.forEach( (meteorite) => destroyMeteorite($container, meteorite));
+    GAME_STATE.meteorites = [];
+    GAME_STATE.currentScore = 0;
+    METEORITE_TIME_APPEARS = 500;
+}
+
+function cleanIntervals() {
+    clearInterval(setIntervalMeteorite);
+    clearInterval(setIntervalScore);
+}
+
+function playDamageAudio() {
+    const audio = new Audio('sounds/damage.mp3');
+    audio.play();
+}
+
+function resetLives() {
+    for(let i=0; i < 3; i++) {
+        const img = document.createElement('img');
+        img.src = "img/pixel-heart.png";
+        img.alt = "Heart";
+        img.classList.add('live');
+        $liveBox.appendChild(img);
+    };
+    $playerLifes = document.querySelectorAll('.live');
+}
+
+function lostLive() {
+    GAME_STATE.player.life--;
+    GAME_STATE.player.invincibility = true;
+    GAME_STATE.currentScore = GAME_STATE.currentScore - 100 < 0
+        ? 0
+        : GAME_STATE.currentScore - 100;
+    $liveBox.removeChild($playerLifes[GAME_STATE.player.life]);
+    playDamageAudio();
+    setTimeout(() => GAME_STATE.player.invincibility = false, 1000);
 }
 
 // CREATE GAME ELEMENTS
@@ -168,7 +234,11 @@ function updateMeteorites(dt, $container) {
         const ob1 = meteorite.$element.getBoundingClientRect();
         const ob2 = document.querySelector('.player').getBoundingClientRect();
         if (isCollition(ob1, ob2)) {
-            onFinishGame( false )
+            if(GAME_STATE.player.life && !GAME_STATE.player.invincibility) {
+                lostLive();
+            } else if(GAME_STATE.player.life === 0) {
+                onFinishGame(false);
+            }
         }
 
         if (meteorite.y > $container.getBoundingClientRect().bottom) {
@@ -202,6 +272,8 @@ function updatePlayerPositionFromMovile(e) {
 
 // Events
 function onWin() {
+    // Remove lives
+    $liveBox.innerHTML = '';
     const audio = new Audio('sounds/winner.mp3');
     audio.play();
     $congratulation.classList.remove('d-none');
@@ -217,11 +289,13 @@ function onFinishGame(isWinner = false) {
     GAME_STATE.isOver = true;
     const $player = document.querySelector('.player');
     $player.classList.add('hidden');
-    clearInterval(setIntervalMeteorite);
-    clearInterval(setIntervalScore);
-    $container.classList.add('cursor-none');
-    $container.removeEventListener('mousemove', updatePlayerPosition);
-    $container.removeEventListener('touchmove', updatePlayerPositionFromMovile);
+
+    $informationBox.classList.remove('d-none');
+    $container.classList.remove('cursor-none');
+
+    cleanIntervals();
+    removeEvents();
+
     if ( isWinner ) {
         onWin();
     } else {
@@ -233,30 +307,16 @@ function onFinishGame(isWinner = false) {
 
 // INIT GAME
 function init() {
-    GAME_STATE.lastTime = Date.now();
-    GAME_STATE.isOver = false;
-    METEORITE_TIME_APPEARS = 400;
-
-    $btnStart.classList.add('hidden');
-    $scoreBoard.classList.remove('hidden');
-    $gameOver.classList.add('d-none');
-    $congratulation.classList.add('d-none');
-
-    GAME_STATE.meteorites.forEach( (meteorite) => destroyMeteorite($container, meteorite));
-    GAME_STATE.meteorites = [];
+    addEvents();
+    resetGameState();
+    cleanScreenGameSpace();
+    resetLives();
     const $player = document.querySelector('.player');
-    
-    if ($player) {
-        $container.removeChild($player);
-    }
-    
+    if ($player) $container.removeChild($player);
     createPlayer($container);
+
     setIntervalMeteorite = setInterval(addMeteorite, METEORITE_TIME_APPEARS);
     setIntervalScore = setInterval(increaseScore, 100);
-    GAME_STATE.currentScore = 0;
-    $container.classList.add('cursor-none');
-    $container.addEventListener('mousemove', updatePlayerPosition);
-    $container.addEventListener('touchmove', updatePlayerPositionFromMovile);
     window.requestAnimationFrame(update);
 }
 
