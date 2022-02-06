@@ -208,7 +208,7 @@ function onWin() {
 }
 
 function onLose() {
-    const audio = new Audio('sounds/explosion.mp3');
+    const audio = new Audio('sounds/explotion-meteorite.mp3');
     audio.play();
     $gameOver.classList.remove('d-none');
 }
