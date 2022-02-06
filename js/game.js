@@ -34,11 +34,11 @@ const GAME_STATE = {
 }
 
 // GAME UTILITIES
-function getOffset(e) {
+function getOffset({pageX, pageY}) {
     const { x, y } = $container.getBoundingClientRect();
 
-    const offsetX = e.pageX - x;
-    const offsetY = e.pageY - y;
+    const offsetX = pageX - x;
+    const offsetY = pageY - y;
 
     return { offsetX, offsetY};
 }
@@ -131,7 +131,7 @@ function removeEvents() {
 function cleanScreenGameSpace() {
     $btnStart.classList.add('d-none');
     $congratulation.classList.add('d-none');
-    $container.classList.add('cursor-none');
+    // $container.classList.add('cursor-none');
     $gameOver.classList.add('d-none');
     $informationBox.classList.add('d-none');
     $scoreBoard.classList.remove('hidden');
@@ -177,6 +177,15 @@ function lostLive() {
     $liveBox.removeChild($playerLifes[GAME_STATE.player.life]);
     playDamageAudio();
     setTimeout(() => GAME_STATE.player.invincibility = false, 1000);
+}
+
+function preventPlayerOverflow({ value, min, max, maxValue, minValue }) {
+    if ( value < min) {
+        console.log('min', minValue);
+        return minValue;
+    } else if( value > max) {
+        return maxValue;        
+    }
 }
 
 // CREATE GAME ELEMENTS
@@ -250,18 +259,38 @@ function updateMeteorites(dt, $container) {
     GAME_STATE.meteorites = GAME_STATE.meteorites.filter( (meteorite) => !meteorite.isDead );
 
 }
+console.log($container.getBoundingClientRect());
 
+// { playerMin, playerMax, containerMin, containerMax }
 function updatePlayerPosition(e) {
-    GAME_STATE.player.x = e.offsetX;
-    GAME_STATE.player.y = e.offsetY;
-
     const $player = document.querySelector('.player');
+    const { height: pHeight, width: pWidth } = $player.getBoundingClientRect();
+    const { left, right, bottom, top, height, width } = $container.getBoundingClientRect();
+    const maxValueY = height - pHeight ;
+    const maxValueX = width - (pWidth/2);
+    const minValueX = (pWidth/2);
+    GAME_STATE.player.y = 
+        preventPlayerOverflow({
+            value: e.pageY,
+            min: top,
+            max: bottom - pHeight,
+            maxValue: maxValueY,
+            minValue: 0
+        }) || e.offsetY;
+    GAME_STATE.player.x =
+        preventPlayerOverflow({
+            value: e.pageX,
+            min: left + (pWidth/2),
+            max: right - (pWidth/2),
+            maxValue: maxValueX,
+            minValue: minValueX,
+        }) || e.offsetX;
     setPosition({ $element: $player, ...GAME_STATE.player });
 }
 
 function updatePlayerPositionFromMovile(e) {
     const eventData = e.changedTouches[0];
-    const { offsetX, offsetY } = getOffset(eventData);
+    const { offsetX, offsetY } = getOffset(...eventData);
 
     GAME_STATE.player.x = offsetX;
     GAME_STATE.player.y = offsetY;
