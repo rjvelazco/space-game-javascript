@@ -21,17 +21,24 @@
                     <div class="point"></div>
                     <div class="point"></div>
                     <div class="point"></div>
+                    <div class="point"></div>
+                    <div class="point"></div>
                 </div>
                 <button class="btn btn-start" id="btn-start">Start</button>
                 <div class="score hidden" id="score">
                     <span>Points</span>
-                    <span>20000</span>
+                    <span id="score-point">0</span>
                 </div>
+            </div>
+            <div class="congratulations d-none">
+                <h1>Congratulations!</h1>
+                <h2>You won the game</h2>
+                <button class="btn btn-restart" onclick="init()">Restart</button>
             </div>
             <div class="game-over d-none">
                 <h1>GAME OVER</h1>
                 <h2>You lost the game</h2>
-                <button class="btn" onclick="init()" id="btn-restart">Restart</button>
+                <button class="btn btn-restart" onclick="init()" id="btn-restart">Restart</button>
             </div>
         </div>
     </div>
