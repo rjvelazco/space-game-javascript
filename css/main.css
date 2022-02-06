@@ -52,12 +52,52 @@ header h1 {
     animation: scroll-background 5s linear infinite;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     position: relative;
+    overflow: hidden;
+}
+
+.game .player {
+    position: absolute;
+    margin-left: -20px;
+    width: 40px;
+    pointer-events: none;
+}
+
+.game .meteorite-start-points {
+    display: flex;
+    justify-content: space-between;
+    padding: 0px 20px;
+    position: absolute;
+    width: 100%;
+    top: -20px;
+    visibility: none;
+    pointer-events: none;
+}
+
+.game .meteorite-start-points .point {
+    height: 20px;
+    width: 20px;
+    background-color: #000;
 }
 
 .game .meteorite {
     position: absolute;
     width: 40px;
+    pointer-events: none;
 }
+
+
+/* RESULTS */
+.game-over {
+    position: absolute;
+    background: #6b1818;
+    color: white;
+    padding: 20px 50px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    text-align: center;
+    animation: pop-in 1s;
+}
+  
 
 /* SCORE */
 .score {
@@ -70,23 +110,29 @@ header h1 {
     padding: 20px;
     color: #eef0f2;
     gap: 10px;
+    pointer-events: none;
 }
 
 
 /* BUTTONS GAME */
-.btn-start {
+.btn {
     background: #E6E8E6;
     border: 1px solid #E6E8E6;
-    bottom: 25%;
     box-shadow: 0 2px 10px rgba(238, 240, 242, 0.2);
     cursor: pointer;
     font-family: 'Minecraft', sans-serif, Arial, Helvetica;
     font-size: 25px;
     font-weight: bold;
-    left: calc(50% - 125px);
+    margin-top: 10px;
     padding: 5px;
-    position: absolute;
     width: 250px;
+}
+
+.btn.btn-start {
+    bottom: 25%;
+    left: calc(50% - 125px);
+    margin:0px;
+    position: absolute;
 }
 
 .btn-start:hover {
@@ -98,12 +144,33 @@ header h1 {
     visibility: hidden;
 }
 
+.d-none {
+    display: none;
+}
+
 /* ANIMATIONS */
 @keyframes scroll-background {
     from {
-      background-position-y: 0px;
+        background-position-y: 0px;
     }
     to {
-      background-position-y: 400px;
+        background-position-y: 400px;
     }
 }
+
+@keyframes pop-in {
+    0% {
+      opacity: 0;
+      transform: translate(0, -100px);
+    }
+    10% {
+      opacity: 1;
+    }
+    50% {
+      transform: translate(0, 30px);
+    }
+    100% {
+      transform: translate(0, 0);
+    }
+}
+  

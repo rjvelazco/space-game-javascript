@@ -13,11 +13,25 @@
         <header><h1>Space-Man</h1></header>
         <div class="game-wrapper">
             <div class="game">
-                <button class="btn-start" id="btn-start">Start</button>
+                <div class="meteorite-start-points">
+                    <div class="point"></div>
+                    <div class="point"></div>
+                    <div class="point"></div>
+                    <div class="point"></div>
+                    <div class="point"></div>
+                    <div class="point"></div>
+                    <div class="point"></div>
+                </div>
+                <button class="btn btn-start" id="btn-start">Start</button>
                 <div class="score hidden" id="score">
                     <span>Points</span>
                     <span>20000</span>
                 </div>
+            </div>
+            <div class="game-over d-none">
+                <h1>GAME OVER</h1>
+                <h2>You lost the game</h2>
+                <button class="btn" onclick="init()" id="btn-restart">Restart</button>
             </div>
         </div>
     </div>
