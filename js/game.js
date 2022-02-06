@@ -153,7 +153,6 @@ function update() {
     const dt = (currentTime - GAME_STATE.lastTime) / 1000;
     
     updateMeteorites(dt, $container);
-    // updatePlayer(dt, $container);
     GAME_STATE.lastTime = currentTime;
     // El método window.requestAnimationFrame informa al navegador
     // que quieres realizar una animación y solicita que el navegador
@@ -220,12 +219,13 @@ function onFinishGame(isWinner = false) {
     $player.classList.add('hidden');
     clearInterval(setIntervalMeteorite);
     clearInterval(setIntervalScore);
+    $container.classList.add('cursor-none');
     $container.removeEventListener('mousemove', updatePlayerPosition);
     $container.removeEventListener('touchmove', updatePlayerPositionFromMovile);
     if ( isWinner ) {
         onWin();
     } else {
-        onLose()
+        onLose();
     }
     
 }
@@ -254,6 +254,7 @@ function init() {
     setIntervalMeteorite = setInterval(addMeteorite, METEORITE_TIME_APPEARS);
     setIntervalScore = setInterval(increaseScore, 100);
     GAME_STATE.currentScore = 0;
+    $container.classList.add('cursor-none');
     $container.addEventListener('mousemove', updatePlayerPosition);
     $container.addEventListener('touchmove', updatePlayerPositionFromMovile);
     window.requestAnimationFrame(update);
