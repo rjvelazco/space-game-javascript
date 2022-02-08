@@ -1,3 +1,4 @@
+// TODO: CREAGE A CLASS CALL "GAME"
 // DOCUMENT ELEMENTS
 const $container = document.querySelector('.game');
 const $scoreBoard = document.querySelector('#score');
@@ -14,7 +15,8 @@ let $playerLifes = document.querySelectorAll('.live');
 const { width: GAME_WIDTH, height: GAME_HEIGHT } = $container.getBoundingClientRect();
 const METEORITE_MAX_SPEED = 200;
 
-let METEORITE_TIME_APPEARS = 500;
+let $player;
+let METEORITE_TIME_APPEARS;
 let LAST_METEORITE_POSITION;
 let setIntervalMeteorite;
 let setIntervalScore;
@@ -28,28 +30,39 @@ const GAME_STATE = {
         life: 3,
         invincibility: false
     },
+    meteoriesSpeed: {
+        level1: 1200,
+        level2: 1000,
+        level3: 800
+    },
     meteorites: [],
-    currentScore: 0,
+    score: {
+        current: 0,
+        add: 1
+    },
     isOver: false
 }
 
 // GAME UTILITIES
-function getOffset({pageX, pageY}) {
-    const { x, y } = $container.getBoundingClientRect();
-
-    const offsetX = pageX - x;
-    const offsetY = pageY - y;
-
-    return { offsetX, offsetY};
-}
-
 function setPosition({$element, x, y}) {
     $element.style.transform = `translate(${x}px, ${y}px)`;
 }
 
 function setMeteoriteAppearsTimer () {
     clearInterval(setIntervalMeteorite)
-    setIntervalMeteorite = setInterval(addMeteorite, METEORITE_TIME_APPEARS);
+    setIntervalMeteorite = setInterval(createMeteorite, METEORITE_TIME_APPEARS);
+}
+
+function addMeorite(x, y) {
+    const $element = document.createElement('img');
+    $element.src = 'img/meteorite.png';
+    $element.className = 'meteorite';
+
+    $container.appendChild($element);
+
+    const meteorite = { x, y, $element };
+    GAME_STATE.meteorites.push( meteorite );
+    setPosition({$element, x, y});
 }
 
 function between(min, max) {  
@@ -69,23 +82,19 @@ function isCollition(ob1, ob2) {
 
 function ajustDificulty() {
         
-    switch(GAME_STATE.currentScore) {
+    switch(GAME_STATE.score.current) {
         case 500: 
-            METEORITE_TIME_APPEARS = 400;
-            GAME_STATE.currentScore += 2;
+            METEORITE_TIME_APPEARS = GAME_STATE.meteoriesSpeed.level2;
+            GAME_STATE.score.add = 2;
             setMeteoriteAppearsTimer();
         break;
-        case 750:
-            METEORITE_TIME_APPEARS = 250;
-            GAME_STATE.currentScore += 5;
+        case 1000:
+            METEORITE_TIME_APPEARS = GAME_STATE.meteoriesSpeed.level3;
+            GAME_STATE.score.add = 5;
             setMeteoriteAppearsTimer();
         break;
-        case 1000: 
+        case 1500: 
             onFinishGame( true );
-        break;
-
-        default: 
-            GAME_STATE.currentScore++;
         break;
     }
 }
@@ -100,38 +109,26 @@ function avoidSamePosition({position, lastPosition, max}) {
     return position;
 }
 
-function addMeteorite() {
-    const max = $meteoriteStartPoints.length;
-    const position = between(0, max - 1);
-    const meteoritePosition = avoidSamePosition({ position, lastPosition: LAST_METEORITE_POSITION, max});
-    LAST_METEORITE_POSITION = meteoritePosition;
-
-    const { x, width } = $meteoriteStartPoints[meteoritePosition].getBoundingClientRect();
-    const { x: containerX } = $container.getBoundingClientRect();
-    const startAt = x - containerX + (width / 2);
-
-    createMeteorite($container, startAt, -20);
-}
-
 function increaseScore() {
-    $scorePoint.innerHTML = GAME_STATE.currentScore;
+    $scorePoint.innerHTML = GAME_STATE.score.current;
+    GAME_STATE.score.current += GAME_STATE.score.add;
     ajustDificulty();
 }
 
 function addEvents() {
     $container.addEventListener('mousemove', updatePlayerPosition);
-    $container.addEventListener('touchmove', updatePlayerPositionFromMovile);
+    $container.addEventListener('touchmove', updatePlayerPositionFromMobile);
 }
 
 function removeEvents() {
     $container.removeEventListener('mousemove', updatePlayerPosition);
-    $container.removeEventListener('touchmove', updatePlayerPositionFromMovile);
+    $container.removeEventListener('touchmove', updatePlayerPositionFromMobile);
 }
 
 function cleanScreenGameSpace() {
     $btnStart.classList.add('d-none');
     $congratulation.classList.add('d-none');
-    // $container.classList.add('cursor-none');
+    $container.classList.add('cursor-none');
     $gameOver.classList.add('d-none');
     $informationBox.classList.add('d-none');
     $scoreBoard.classList.remove('hidden');
@@ -143,8 +140,9 @@ function resetGameState() {
     GAME_STATE.isOver = false;
     GAME_STATE.meteorites.forEach( (meteorite) => destroyMeteorite($container, meteorite));
     GAME_STATE.meteorites = [];
-    GAME_STATE.currentScore = 0;
-    METEORITE_TIME_APPEARS = 500;
+    GAME_STATE.score.current = 0;
+    GAME_STATE.score.add = 1;
+    METEORITE_TIME_APPEARS = GAME_STATE.meteoriesSpeed.level1;
 }
 
 function cleanIntervals() {
@@ -152,9 +150,15 @@ function cleanIntervals() {
     clearInterval(setIntervalScore);
 }
 
-function playDamageAudio() {
-    const audio = new Audio('sounds/damage.mp3');
-    audio.play();
+function playAudio(url = '') {
+
+    if (!url.length) {
+        return;
+    }
+
+    const audio = new Audio(url);
+    audio.play()
+
 }
 
 function resetLives() {
@@ -171,17 +175,53 @@ function resetLives() {
 function lostLive() {
     GAME_STATE.player.life--;
     GAME_STATE.player.invincibility = true;
-    GAME_STATE.currentScore = GAME_STATE.currentScore - 100 < 0
+    GAME_STATE.score.current = GAME_STATE.score.current - 100 < 0
         ? 0
-        : GAME_STATE.currentScore - 100;
+        : GAME_STATE.score.current - 100;
     $liveBox.removeChild($playerLifes[GAME_STATE.player.life]);
-    playDamageAudio();
+    playAudio('sounds/damage.mp3');
     setTimeout(() => GAME_STATE.player.invincibility = false, 1000);
+}
+
+function getOffsetMobile({pageX, pageY}) {
+    const { x, y } = $container.getBoundingClientRect();
+
+    const offsetX = pageX - x;
+    const offsetY = pageY - y;
+
+    return { offsetX, offsetY};
+}
+
+function getPlayerOffset({offsetX, offsetY, pageX, pageY }) {
+
+    const { height: pHeight, width: pWidth } = $player.getBoundingClientRect();
+    const { left, right, bottom, top, height, width } = $container.getBoundingClientRect();
+
+    const maxValueY = height - pHeight ;
+    const maxValueX = width - (pWidth/2);
+    const minValueX = (pWidth/2);
+
+    const x = preventPlayerOverflow({
+        value: pageX,
+        min: left + (pWidth /2),
+        max: right - (pWidth / 2),
+        maxValue: maxValueX,
+        minValue: minValueX,
+    }) || offsetX;
+    const y  = preventPlayerOverflow({
+        value: pageY,
+        min: top,
+        max: bottom - pHeight,
+        maxValue: maxValueY,
+        minValue: 1
+    }) || offsetY;
+
+    return { x, y };
+
 }
 
 function preventPlayerOverflow({ value, min, max, maxValue, minValue }) {
     if ( value < min) {
-        console.log('min', minValue);
         return minValue;
     } else if( value > max) {
         return maxValue;        
@@ -190,26 +230,30 @@ function preventPlayerOverflow({ value, min, max, maxValue, minValue }) {
 
 // CREATE GAME ELEMENTS
 function createPlayer($container) {
+
     GAME_STATE.player.x = GAME_WIDTH / 2;
     GAME_STATE.player.y = GAME_HEIGHT - 50;
 
-    const $player = document.createElement('img');
-    $player.src = 'img/player-blue-1.png';
-    $player.className = 'player';
-    $container.appendChild($player);
+    const $newPlayer = document.createElement('img');
+    $newPlayer.src = 'img/player-blue-1.png';
+    $newPlayer.className = 'player';
+    $container.appendChild($newPlayer);
+
+    $player = $newPlayer;
     setPosition({ $element: $player, ...GAME_STATE.player });
 }
 
-function createMeteorite($container, x, y) {
-    const $element = document.createElement('img');
-    $element.src = 'img/meteorite.png';
-    $element.className = 'meteorite';
+function createMeteorite() {
+    const max = $meteoriteStartPoints.length;
+    const position = between(0, max - 1);
+    const meteoritePosition = avoidSamePosition({ position, lastPosition: LAST_METEORITE_POSITION, max});
+    LAST_METEORITE_POSITION = meteoritePosition;
 
-    $container.appendChild($element);
+    const { x, width } = $meteoriteStartPoints[meteoritePosition].getBoundingClientRect();
+    const { x: containerX } = $container.getBoundingClientRect();
+    const startAt = x - containerX + (width / 2);
 
-    const meteorite = { x, y, $element };
-    GAME_STATE.meteorites.push( meteorite );
-    setPosition({$element, x, y});
+    addMeorite(startAt, -20);
 }
 
 // DESTROY GAME ELEMENTS
@@ -241,7 +285,7 @@ function updateMeteorites(dt, $container) {
         meteorite.y += dt * METEORITE_MAX_SPEED;
         setPosition({ ...meteorite });
         const ob1 = meteorite.$element.getBoundingClientRect();
-        const ob2 = document.querySelector('.player').getBoundingClientRect();
+        const ob2 = $player.getBoundingClientRect();
         if (isCollition(ob1, ob2)) {
             if(GAME_STATE.player.life && !GAME_STATE.player.invincibility) {
                 lostLive();
@@ -259,81 +303,42 @@ function updateMeteorites(dt, $container) {
     GAME_STATE.meteorites = GAME_STATE.meteorites.filter( (meteorite) => !meteorite.isDead );
 
 }
-console.log($container.getBoundingClientRect());
 
-// { playerMin, playerMax, containerMin, containerMax }
 function updatePlayerPosition(e) {
-    const $player = document.querySelector('.player');
-    const { height: pHeight, width: pWidth } = $player.getBoundingClientRect();
-    const { left, right, bottom, top, height, width } = $container.getBoundingClientRect();
-    const maxValueY = height - pHeight ;
-    const maxValueX = width - (pWidth/2);
-    const minValueX = (pWidth/2);
-    GAME_STATE.player.x = preventPlayerOverflow({
-        value: e.pageX,
-        min: left + (pWidth/2),
-        max: right - (pWidth/2),
-        maxValue: maxValueX,
-        minValue: minValueX,
-    }) || e.offsetX;
-    GAME_STATE.player.y =  preventPlayerOverflow({
-            value: e.pageY,
-            min: top,
-            max: bottom - pHeight,
-            maxValue: maxValueY,
-            minValue: 0
-        }) || e.offsetY;
+    const { x, y } = getPlayerOffset(e);
+
+    GAME_STATE.player.x = x;
+    GAME_STATE.player.y = y;
+
     setPosition({ $element: $player, ...GAME_STATE.player });
 }
 
-function updatePlayerPositionFromMovile(e) {
+function updatePlayerPositionFromMobile(e) {
     const eventData = e.changedTouches[0];
-    const { offsetX, offsetY } = getOffset(eventData);
-    
-    const $player = document.querySelector('.player');
+    const { offsetX, offsetY } = getOffsetMobile(eventData);
+    const { x, y } = getPlayerOffset({ offsetX, offsetY, pageX: eventData.pageX, pageY: eventData.pageY })
 
-    const { height: pHeight, width: pWidth } = $player.getBoundingClientRect();
-    const { left, right, bottom, top, height, width } = $container.getBoundingClientRect();
-    const maxValueY = height - pHeight ;
-    const maxValueX = width - (pWidth/2);
-    const minValueX = (pWidth/2);
-
-    GAME_STATE.player.x = preventPlayerOverflow({
-        value: eventData.pageX,
-        min: left + (pWidth/2),
-        max: right - (pWidth/2),
-        maxValue: maxValueX,
-        minValue: minValueX,
-    }) || offsetX;
-    GAME_STATE.player.y = preventPlayerOverflow({
-        value: eventData.pageY,
-        min: top,
-        max: bottom - pHeight,
-        maxValue: maxValueY,
-        minValue: 1
-    }) || offsetY;
+    GAME_STATE.player.x = x;
+    GAME_STATE.player.y = y;
 
     setPosition({ $element: $player, ...GAME_STATE.player });
 }
 
 // Events
 function onWin() {
+    playAudio('sounds/winner.mp3');
     // Remove lives
     $liveBox.innerHTML = '';
-    const audio = new Audio('sounds/winner.mp3');
-    audio.play();
     $congratulation.classList.remove('d-none');
 }
 
 function onLose() {
-    const audio = new Audio('sounds/explotion-meteorite.mp3');
-    audio.play();
+    playAudio('sounds/explotion-meteorite.mp3');
     $gameOver.classList.remove('d-none');
 }
 
 function onFinishGame(isWinner = false) {
     GAME_STATE.isOver = true;
-    const $player = document.querySelector('.player');
     $player.classList.add('hidden');
 
     $informationBox.classList.remove('d-none');
@@ -350,18 +355,17 @@ function onFinishGame(isWinner = false) {
     
 }
 
-
 // INIT GAME
 function init() {
     addEvents();
     resetGameState();
     cleanScreenGameSpace();
     resetLives();
-    const $player = document.querySelector('.player');
+
     if ($player) $container.removeChild($player);
     createPlayer($container);
 
-    setIntervalMeteorite = setInterval(addMeteorite, METEORITE_TIME_APPEARS);
+    setIntervalMeteorite = setInterval(createMeteorite, METEORITE_TIME_APPEARS);
     setIntervalScore = setInterval(increaseScore, 100);
     window.requestAnimationFrame(update);
 }
