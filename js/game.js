@@ -251,7 +251,7 @@ function createMeteorite() {
 
     const { x, width } = $meteoriteStartPoints[meteoritePosition].getBoundingClientRect();
     const { x: containerX } = $container.getBoundingClientRect();
-    const startAt = x - containerX + (width / 2);
+    const startAt = x - containerX - (width / 2);
 
     addMeorite(startAt, -20);
 }
