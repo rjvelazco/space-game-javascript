@@ -42,7 +42,7 @@ function createMeteorite() {
     const meteoritePosition = avoidSamePosition({ position, lastPosition: LAST_METEORITE_POSITION, max});
     LAST_METEORITE_POSITION = meteoritePosition;
 
-    const { x, width } = $meteoriteStartPoints[max].getBoundingClientRect();
+    const { x, width } = $meteoriteStartPoints[position].getBoundingClientRect();
     const { x: containerX } = $container.getBoundingClientRect();
     const startAt = x - containerX - (width / 2);
 
